@@ -2,9 +2,9 @@
 
 I'm building a [minimig](http://www.techtravels.org/wp-content/uploads/pefiles/minimig/weeren001/home.html):
 
-![Order]("https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/pcbway_order.png")
+![Order](https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/pcbway_order.png)
 
-![Received]("https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/2016-08-01 11.01.28.jpg")
+![Received]("https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/2016-08-01\ 11.01.28.jpg)
 
 ![Unpacked](https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/2016-08-01 11.01.55.jpg)
 
