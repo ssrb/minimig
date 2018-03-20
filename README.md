@@ -4,7 +4,7 @@ I'm building a [minimig](http://www.techtravels.org/wp-content/uploads/pefiles/m
 
 ![Order](https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/pcbway_order.png)
 
-![Received]("https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/2016-08-01%2011.01.28.jpg)
+![Received](https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/2016-08-01%2011.01.28.jpg)
 
 ![Unpacked](https://raw.githubusercontent.com/ssrb/minimig/master/screenshots/2016-08-01%2011.01.55.jpg)
 
