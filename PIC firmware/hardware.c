@@ -71,7 +71,7 @@ void HardwareInit(void)
 }
 
 /*interrupt service routine*/
-void interrupt intservice(void)
+void __interrupt () intservice(void)
 {
 	/*clear timer 0 interrupt flag*/
 	TMR0IF=0;

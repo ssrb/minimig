@@ -2,13 +2,13 @@
 #define	OSD_H_INCLUDED
 
 /*constants*/
-#define	OSDCTRLUP		0x01		/*OSD up control*/
-#define	OSDCTRLDOWN		0x02		/*OSD down control*/
-#define	OSDCTRLSELECT	0x04		/*OSD select control*/
-#define	OSDCTRLMENU		0x08		/*OSD menu control*/
+#define	OSDCTRLUP		0x01u		/*OSD up control*/
+#define	OSDCTRLDOWN		0x02u		/*OSD down control*/
+#define	OSDCTRLSELECT	0x04u		/*OSD select control*/
+#define	OSDCTRLMENU		0x08u		/*OSD menu control*/
 
 /*functions*/
-void OsdWrite(unsigned char n,const unsigned char *s, char inver);
+void OsdWrite(unsigned char n,const char *s, int inver);
 void OsdClear(void);
 void OsdEnable(void);
 void OsdDisable(void);

@@ -59,7 +59,7 @@ JB:
 				-disk led active during writes to disk
 */
 
-#include <pic18.h>
+#include <xc.h>
 #include <stdio.h>
 #include <string.h>
 #include "hardware.h"
@@ -68,6 +68,8 @@ JB:
 #include "fat1618_2.h"
 
 #define DEBUG
+
+struct adfTYPE;
 
 void CheckTrack(struct adfTYPE *drive);
 void ReadTrack(struct adfTYPE *drive);
@@ -84,8 +86,8 @@ void ErrorMessage(const char* message, unsigned char code);
 unsigned short SectorToFpga(unsigned char sector,unsigned char track);
 void SectorGapToFpga(void);
 void SectorHeaderToFpga(unsigned char);
-char UploadKickstart(const unsigned char *name);
-unsigned char Open(const unsigned char *name);
+char UploadKickstart(const char *name);
+unsigned char Open(const char *name);
 unsigned char ConfigureFpga(void);
 void HandleFpgaCmd(unsigned char c1, unsigned char c2);
 void InsertFloppy(struct adfTYPE *drive);
@@ -94,45 +96,45 @@ void PrintDir(void);
 void User(void);
 
 /*FPGA commands <c1> argument*/
-#define		CMD_USERSELECT		0x80	/*user interface SELECT*/
-#define		CMD_USERUP			0x40	/*user interface UP*/
-#define		CMD_USERDOWN		0x20	/*user interface DOWN*/
-#define		CMD_GETDSKSTAT		0x04	/*FPGA requests status of disk drive*/
-#define		CMD_RDTRCK			0x02	/*FPGA requests reading of track <c2>*/
-#define		CMD_WRTRCK			0x01	/*FPGA requests writing of trck <c2>*/
+#define		CMD_USERSELECT		0x80u	/*user interface SELECT*/
+#define		CMD_USERUP			0x40u	/*user interface UP*/
+#define		CMD_USERDOWN		0x20u	/*user interface DOWN*/
+#define		CMD_GETDSKSTAT		0x04u	/*FPGA requests status of disk drive*/
+#define		CMD_RDTRCK			0x02u	/*FPGA requests reading of track <c2>*/
+#define		CMD_WRTRCK			0x01u	/*FPGA requests writing of trck <c2>*/
 
 #define		ST_READREQ	0x02
 
 /*floppy status*/
-#define		DSK_INSERTED		0x01	/*disk is inserted*/
-#define		DSK_WRITABLE		0x02	/*disk is writable*/
+#define		DSK_INSERTED		0x01u	/*disk is inserted*/
+#define		DSK_WRITABLE		0x02u	/*disk is writable*/
 
 /*menu states*/
-#define		MENU_NONE1			0		/*no menu*/		
-#define		MENU_NONE2			1		/*no menu*/		
-#define		MENU_MAIN1			2		/*main menu*/
-#define		MENU_MAIN2			3		/*main menu*/
-#define		MENU_FILE1			4		/*file requester menu*/
-#define		MENU_FILE2			5		/*file requester menu*/
-#define		MENU_RESET1			6		/*reset menu*/
-#define		MENU_RESET2			7		/*reset menu*/
-#define		MENU_SETTINGS1		8		/*settings menu*/
-#define		MENU_SETTINGS2		9		/*settings menu*/
-#define		MENU_ROMSELECT1		10		/*rom select menu*/
-#define		MENU_ROMSELECT2		11		/*rom select menu*/
-#define		MENU_ROMFILE1		12		/*rom file select menu*/
-#define		MENU_ROMFILE2		13		/*rom file select menu*/
-#define		MENU_ERROR			127		/*error message menu*/
+#define		MENU_NONE1			0u		/*no menu*/		
+#define		MENU_NONE2			1u		/*no menu*/		
+#define		MENU_MAIN1			2u		/*main menu*/
+#define		MENU_MAIN2			3u		/*main menu*/
+#define		MENU_FILE1			4u		/*file requester menu*/
+#define		MENU_FILE2			5u		/*file requester menu*/
+#define		MENU_RESET1			6u		/*reset menu*/
+#define		MENU_RESET2			7u		/*reset menu*/
+#define		MENU_SETTINGS1		8u		/*settings menu*/
+#define		MENU_SETTINGS2		9u		/*settings menu*/
+#define		MENU_ROMSELECT1		10u		/*rom select menu*/
+#define		MENU_ROMSELECT2		11u		/*rom select menu*/
+#define		MENU_ROMFILE1		12u		/*rom file select menu*/
+#define		MENU_ROMFILE2		13u		/*rom file select menu*/
+#define		MENU_ERROR			127u		/*error message menu*/
 
 /*other constants*/
-#define		DIRSIZE				8		/*size of directory display window*/
-#define		REPEATTIME			50		/*repeat delay in 10ms units*/
-#define		REPEATRATE			5		/*repeat rate in 10ms units*/
+#define		DIRSIZE				8u		/*size of directory display window*/
+#define		REPEATTIME			50u		/*repeat delay in 10ms units*/
+#define		REPEATRATE			5u		/*repeat rate in 10ms units*/
 
-#define		EEPROM_LRFILTER		0x10
-#define		EEPROM_HRFILTER		0x11
-#define		EEPROM_MEMCFG		0x12
-#define		EEPROM_KICKNAME		0x18	//size 8
+#define		EEPROM_LRFILTER		0x10u
+#define		EEPROM_HRFILTER		0x11u
+#define		EEPROM_MEMCFG		0x12u
+#define		EEPROM_KICKNAME		0x18u	//size 8
 
 /*variables*/
 struct adfTYPE
@@ -153,9 +155,9 @@ unsigned char dirptr;					/*pointer into directory array*/
 unsigned char menustate = MENU_NONE1;
 unsigned char menusub = 0;
 
-unsigned char s[25];					/*used to build strings*/
+char s[25];					/*used to build strings*/
 
-bdata unsigned char kickname[12];
+unsigned char __section("bdata") kickname[12];
 
 unsigned char lr_filter;
 unsigned char hr_filter;
@@ -188,6 +190,50 @@ void FatalError(unsigned char code)
 	}
 }
 
+// See https://www.eevblog.com/forum/beginners/pic18f-xc8-eeprom-(newbie-question)/
+// Suggested improvment
+// There's another refinement that may be useful tf the write delay ever becomes a problem.
+// If you move the
+// while(EECON1bits.WR); //Wait till the write completion
+// to the beginning of the write routine and also insert the same line at the 
+// beginning of the read routine, then the write function can return immediately
+// while the write happens in the background.  It only blocks if you write another 
+// byte before its finished or attempt to read while a write is still in progress.
+// That lets your program carry on doing other stuff that cant tolerate a 4ms 
+// delay caused by waiting for the EEPROM write.
+
+#undef eeprom_read
+#undef eeprom_write
+
+unsigned char eeprom_read(unsigned char badd)
+{
+	EEADR = badd;
+	EECON1bits.CFGS = 0;
+	EECON1bits.EEPGD = 0;
+	EECON1bits.RD = 1;
+	Nop(); //Nop may be required for latency at high frequencies
+	Nop(); //Nop may be required for latency at high frequencies
+	return ( EEDATA );              // return with read byte
+}
+
+void eeprom_write( unsigned char badd, char bdat)
+{
+	static bit GIE_BIT_VAL;
+
+	EEADR = badd;
+	EEDATA = bdat;
+  	EECON1bits.EEPGD = 0;
+	EECON1bits.CFGS = 0;
+	EECON1bits.WREN = 1;
+	GIE_BIT_VAL = INTCONbits.GIE;
+	INTCONbits.GIE = 0;
+	EECON2 = 0x55; // critical unlock sequence
+	EECON2 = 0xAA;
+	EECON1bits.WR = 1; // end critical sequence
+	while(EECON1bits.WR); //Wait till the write completion
+	INTCONbits.GIE = (unsigned char)GIE_BIT_VAL;
+	EECON1bits.WREN = 0;
+}
 
 /*This is where it all starts after reset*/
 void main(void)
@@ -331,7 +377,7 @@ void main(void)
 	}
 }
 
-char UploadKickstart(const unsigned char *name)
+char UploadKickstart(const char *name)
 {
 	if (Open(name))
 	{
@@ -396,7 +442,7 @@ char BootPrint(const char* text)
 					SPI(0x00);
 					SPI(0x00);
 					SPI(0x00);
-					SPI(n+2); //+2 because only even byte count is possible to send and we have to send termination zero byte
+					SPI(n+2u); //+2 because only even byte count is possible to send and we have to send termination zero byte
 					//don't care
 					SPI(0x00);
 					SPI(0x00);
@@ -410,7 +456,7 @@ char BootPrint(const char* text)
 				if (c3==0x80 && c4==((n+2)>>1))
 				{
 					p = text;
-					n = c4<<1;
+					n = (unsigned)(c4<<1);
 					while (n--)
 					{
 						c4 = *p;
@@ -598,15 +644,15 @@ void User(void)
 				sprintf(s,"     eject df0 ");
 			else/*no floppy in df0*/
 				sprintf(s,"     insert df0");
-			OsdWrite(4,s,menusub==0);	
+			OsdWrite(4,s,(unsigned)(menusub==0));
 
-			OsdWrite(5,"     settings",menusub==1);
+			OsdWrite(5,"     settings",(unsigned)(menusub==1));
 			
 			/*reset system*/
-			OsdWrite(6,"     reset",menusub==2);
+			OsdWrite(6,"     reset",(unsigned)(menusub==2));
 			
 			/*exit menu*/
-			OsdWrite(7,"     exit",menusub==3);
+			OsdWrite(7,"     exit",(unsigned)(menusub==3));
 
 			/*goto to second state of main menu*/
 			menustate = MENU_MAIN2;
@@ -706,8 +752,8 @@ void User(void)
 		case MENU_RESET1:
 			/*menu title*/
 			OsdWrite(0,"    Reset Minimig?",0);
-			OsdWrite(2,"      yes",menusub==0);
-			OsdWrite(3,"      no",menusub==1);
+			OsdWrite(2,"      yes",(unsigned)(menusub==0));
+			OsdWrite(3,"      no",(unsigned)(menusub==1));
 		
 			/*goto to second state of reset menu*/
 			menustate = MENU_RESET2;
@@ -751,8 +797,8 @@ void User(void)
 
 			strcpy(s,"  Lores Filter: ");
 			strcpy(&s[16],filter_msg[lr_filter]);
-			OsdWrite(2,s,menusub==0);
-	
+			OsdWrite(2,s, menusub==0);
+            
 			strcpy(s,"  Hires Filter: ");
 			strcpy(&s[16],filter_msg[hr_filter]);
 			OsdWrite(3,s,menusub==1);
@@ -851,11 +897,11 @@ void User(void)
 			strncpy(&s[9],kickname,8);
 			s[9+8] = 0;
 			OsdWrite(2,s,0);
-			OsdWrite(3,"    select",menusub==0);
-			OsdWrite(4,"    rekick",menusub==1);
-			OsdWrite(5,"    rekick & save",menusub==2);
+			OsdWrite(3,"    select",menusub==0u);
+			OsdWrite(4,"    rekick",menusub==1u);
+			OsdWrite(5,"    rekick & save",menusub==2u);
 	
-			OsdWrite(7,"        exit",menusub==3);
+			OsdWrite(7,"        exit",menusub==3u);
 		
 			/*goto to second state of reset menu*/
 			menustate = MENU_ROMSELECT2;
@@ -1059,7 +1105,7 @@ void ScrollDir(const unsigned char *type, unsigned char mode)
 				if (rc)
 				{
 					for (i=0;i<DIRSIZE-1;i++)
-						directory[i] = directory[i+1];
+						directory[i] = directory[i+1u];
 					directory[DIRSIZE-1] = file;
 				}
 			}
@@ -1086,7 +1132,7 @@ void ScrollDir(const unsigned char *type, unsigned char mode)
 				if (rc)
 				{
 					for (i=DIRSIZE-1;i>0;i--)
-						directory[i] = directory[i-1];
+						directory[i] = directory[i-1u];
 					directory[0] = file;
 				}
 			}
@@ -1112,7 +1158,7 @@ void InsertFloppy(struct adfTYPE *drive)
 	{
 		if (i%9==0)
 		{
-			s[(i/9)+1]='*';
+			s[(i/9u)+1u]='*';
 			OsdWrite(3,s,0);
 		}
 			
@@ -1283,7 +1329,7 @@ unsigned char ConfigureFpga(void)
 		/*read sector if 512 (64*8) bytes done*/
 		if (t%64==0)
 		{
-			DISKLED = !((t>>9)&1);
+			DISKLED = (unsigned char)!((t>>9)&1);
 			putchar('*');
 			if (!FileRead2(&file))
 				return(0);				
@@ -1341,7 +1387,7 @@ void ReadTrack(struct adfTYPE *drive)
 		drive->trackprev = drive->track;
 		sector           = 0;
 		file.cluster     = drive->cache[drive->track];
-		file.sec         = drive->track*11;
+		file.sec         = drive->track*11u;
 		drive->sectoroffset = sector;
 		drive->clusteroffset = file.cluster;
 	}
@@ -1349,14 +1395,14 @@ void ReadTrack(struct adfTYPE *drive)
 	{/*same track, start at next sector in track*/
 		sector       = drive->sectoroffset;
 		file.cluster = drive->clusteroffset;
-		file.sec     = (drive->track*11)+sector;
+		file.sec     = (drive->track*11u)+sector;
 	}
 	
 	EnableFpga();
 
 	c1 = SPI(0);		//read request signal
 	c2 = SPI(0);		//track number (cylinder & head)
-	c3 = 0x3F&SPI(0);	//msb of mfm words to transfer 
+	c3 = 0x3Fu&SPI(0);	//msb of mfm words to transfer 
 	c4 = SPI(drive->status);		//lsb of mfm words to transfer
 
 	DisableFpga();
@@ -1366,7 +1412,7 @@ void ReadTrack(struct adfTYPE *drive)
 	{
 		sector           = 0;
 		file.cluster     = drive->cache[drive->track];
-		file.sec         = drive->track*11;
+		file.sec         = drive->track*11u;
 	}
 
 	while (1)
@@ -1387,20 +1433,20 @@ void ReadTrack(struct adfTYPE *drive)
 			c += 'A'-'9'-1;
 		putchar(c);
 		putchar(':');
-		c = ((c3>>4)&0xF) + '0';
+		c = (unsigned char)(((c3>>4)&0xF)) + '0';
 		if (c>'9')
 			c += 'A'-'9'-1;
 		putchar(c);
-		c = (c3&0xF) + '0';
+		c = (unsigned char)((c3&0xF)) + '0';
 		if (c>'9')
 			c += 'A'-'9'-1;
 		putchar(c);
 
-		c = ((c4>>4)&0xF) + '0';
+		c = (unsigned char)(((c4>>4)&0xF)) + '0';
 		if (c>'9')
 			c += 'A'-'9'-1;
 		putchar(c);
-		c = (c4&0xF) + '0';
+		c = (unsigned char)((c4&0xF)) + '0';
 		if (c>'9')
 			c += 'A'-'9'-1;
 		putchar(c);
@@ -1496,7 +1542,7 @@ void ReadTrack(struct adfTYPE *drive)
 		{
 			sector       = 0;
 			file.cluster = drive->cache[drive->track];
-			file.sec     = drive->track*11;
+			file.sec     = drive->track*11u;
 		}
 		
 		//remember current sector and cluster
@@ -1527,10 +1573,10 @@ void WriteTrack(struct adfTYPE *drive)
 	
 	//setting file pointer to begining of current track
 	file.cluster = drive->cache[drive->track];
-	file.sec     = drive->track*11;
+	file.sec     = drive->track*11u;
 	sector = 0;
 
-	drive->trackprev = drive->track+1;	//just to force next read from the start of current track
+	drive->trackprev = drive->track+1u;	//just to force next read from the start of current track
 
 #ifdef DEBUG
 	printf("*%d:\r",drive->track);
@@ -1552,7 +1598,7 @@ void WriteTrack(struct adfTYPE *drive)
 					else
 					{
 						file.cluster = drive->cache[drive->track];
-						file.sec     = drive->track*11;
+						file.sec     = drive->track*11u;
 						sector = 0;
 					}
 				}				
@@ -1596,13 +1642,13 @@ unsigned char FindSync(struct adfTYPE *drive)
 			break;
 		if (c2 != drive->track)
 			break;
-		c3 = SPI(0)&0xBF;		//msb of mfm words to transfer 
+		c3 = SPI(0)&0xBFu;		//msb of mfm words to transfer 
 		c4 = SPI(0);			//lsb of mfm words to transfer
 
 		if (c3==0 && c4==0)
 			break;
 
-		n = ((c3&0x3F)<<8) + c4;
+		n = ((c3&0x3Fu)<<8) + c4;
 
 		while (n--)
 		{
@@ -1648,35 +1694,35 @@ unsigned char GetHeader(unsigned char *pTrack, unsigned char *pSector)
 			if (c1!=0x44 || c2!=0x89)
 			{
 				Error = 21;
-				printf("\rSecond sync word missing...\r",c1,c2,c3,c4);
+				printf("\rSecond sync word missing...\r");
 				break;
 			}
 
 			c = SPI(0);
 			checksum[0] = c;
-			c1 = (c&0x55)<<1;
+			c1 = (unsigned char)((c&0x55)<<1);
 			c = SPI(0);
 			checksum[1] = c;
-			c2 = (c&0x55)<<1;
+			c2 = (unsigned char)((c&0x55)<<1);
 			c = SPI(0);
 			checksum[2] = c;
-			c3 = (c&0x55)<<1;
+			c3 = (unsigned char)((c&0x55)<<1);
 			c = SPI(0);
 			checksum[3] = c;
-			c4 = (c&0x55)<<1;
+			c4 = (unsigned char)((c&0x55)<<1);
 
 			c = SPI(0);
 			checksum[0] ^= c;
-			c1 |= c&0x55;
+			c1 |= (unsigned char)(c&0x55);
 			c = SPI(0);
 			checksum[1] ^= c;
-			c2 |= c&0x55;
+			c2 |= (unsigned char)(c&0x55);
 			c = SPI(0);
 			checksum[2] ^= c;
-			c3 |= c&0x55;
+			c3 |= (unsigned char)(c&0x55);
 			c = SPI(0);
 			checksum[3] ^= c;
-			c4 |= c&0x55;
+			c4 |= (unsigned char)(c&0x55);
 
 			if (c1 != 0xFF)		//always 0xFF
 				Error = 22;
@@ -1713,15 +1759,15 @@ unsigned char GetHeader(unsigned char *pTrack, unsigned char *pSector)
 			checksum[2] &= 0x55;
 			checksum[3] &= 0x55;
 
-			c1 = (SPI(0)&0x55)<<1;
-			c2 = (SPI(0)&0x55)<<1;
-			c3 = (SPI(0)&0x55)<<1;
-			c4 = (SPI(0)&0x55)<<1;
+			c1 = (unsigned char)((SPI(0)&0x55)<<1);
+			c2 = (unsigned char)((SPI(0)&0x55)<<1);
+			c3 = (unsigned char)((SPI(0)&0x55)<<1);
+			c4 = (unsigned char)((SPI(0)&0x55)<<1);
 
-			c1 |= SPI(0)&0x55;
-			c2 |= SPI(0)&0x55;
-			c3 |= SPI(0)&0x55;
-			c4 |= SPI(0)&0x55;
+			c1 |= (unsigned char)(SPI(0)&0x55);
+			c2 |= (unsigned char)(SPI(0)&0x55);
+			c3 |= (unsigned char)(SPI(0)&0x55);
+			c4 |= (unsigned char)(SPI(0)&0x55);
 
 			if (c1!=checksum[0] || c2!=checksum[1] || c3!=checksum[2] || c4!=checksum[3])
 			{
@@ -1765,19 +1811,19 @@ unsigned char GetData()
 		c3 = SPI(0);			//msb of mfm words to transfer 
 		c4 = SPI(0);			//lsb of mfm words to transfer
 
-		n = ((c3&0x3F)<<8) + c4;
+		n = (unsigned char)(((c3&0x3F)<<8) + c4);
 
 		if (n >= 0x204)
 		{
-			c1 = (SPI(0)&0x55)<<1;
-			c2 = (SPI(0)&0x55)<<1;
-			c3 = (SPI(0)&0x55)<<1;
-			c4 = (SPI(0)&0x55)<<1;
+			c1 = (unsigned char)((SPI(0)&0x55)<<1);
+			c2 = (unsigned char)((SPI(0)&0x55)<<1);
+			c3 = (unsigned char)((SPI(0)&0x55)<<1);
+			c4 = (unsigned char)((SPI(0)&0x55)<<1);
 
-			c1 |= SPI(0)&0x55;
-			c2 |= SPI(0)&0x55;
-			c3 |= SPI(0)&0x55;
-			c4 |= SPI(0)&0x55;
+			c1 |= (unsigned char)(SPI(0)&0x55);
+			c2 |= (unsigned char)(SPI(0)&0x55);
+			c3 |= (unsigned char)(SPI(0)&0x55);
+			c4 |= (unsigned char)(SPI(0)&0x55);
 
 			checksum[0] = 0;
 			checksum[1] = 0;
@@ -1791,16 +1837,16 @@ unsigned char GetData()
 			{
 				c = SPI(0);
 				checksum[0] ^= c;
-				*p++ = (c&0x55)<<1;
+				*p++ = (unsigned char)((c&0x55)<<1);
 				c = SPI(0);
 				checksum[1] ^= c;
-				*p++ = (c&0x55)<<1;
+				*p++ = (unsigned char)((c&0x55)<<1);
 				c = SPI(0);
 				checksum[2] ^= c;
-				*p++ = (c&0x55)<<1;
+				*p++ = (unsigned char)((c&0x55)<<1);
 				c = SPI(0);
 				checksum[3] ^= c;
-				*p++ = (c&0x55)<<1;
+				*p++ = (unsigned char)((c&0x55)<<1);
 			}
 			while(--i);
 
@@ -1811,16 +1857,16 @@ unsigned char GetData()
 			{
 				c = SPI(0);
 				checksum[0] ^= c;
-				*p++ |= c&0x55;
+				*p++ |= (unsigned char)(c&0x55);
 				c = SPI(0);
 				checksum[1] ^= c;
-				*p++ |= c&0x55;
+				*p++ |= (unsigned char)(c&0x55);
 				c = SPI(0);
 				checksum[2] ^= c;
-				*p++ |= c&0x55;
+				*p++ |= (unsigned char)(c&0x55);
 				c = SPI(0);
 				checksum[3] ^= c;
-				*p++ |= c&0x55;
+				*p++ |= (unsigned char)(c&0x55);
 			}
 			while(--i);
 
@@ -1851,7 +1897,7 @@ unsigned char GetData()
 	return 0;
 }
 
-unsigned char Open(const unsigned char *name)
+unsigned char Open(const char *name)
 {
 	unsigned char i,j;
 	
@@ -1910,13 +1956,13 @@ unsigned short SectorToFpga(unsigned char sector,unsigned char track)
 	c=0x55;
 	csum[0]^=c;
 	SPI(c);
-	c=(track>>1)&0x55;
+	c=(unsigned char)((track>>1)&0x55);
 	csum[1]^=c;
 	SPI(c);
-	c=(sector>>1)&0x55;
+	c=(unsigned char)((sector>>1)&0x55);
 	csum[2]^=c;
 	SPI(c);
-	c=((11-sector)>>1)&0x55;
+	c=(unsigned char)(((11-sector)>>1)&0x55);
 	csum[3]^=c;
 	SPI(c);
 
@@ -1924,13 +1970,13 @@ unsigned short SectorToFpga(unsigned char sector,unsigned char track)
 	c=0x55;
 	csum[0]^=c;
 	SPI(c);
-	c=track&0x55;
+	c=(unsigned char)(track&0x55);
 	csum[1]^=c;
 	SPI(c);
-	c=sector&0x55;
+	c=(unsigned char)(sector&0x55);
 	csum[2]^=c;
 	SPI(c);
-	c=(11-sector)&0x55;
+	c=(unsigned char)((11-sector)&0x55);
 	csum[3]^=c;
 	SPI(c);
 	
@@ -1939,14 +1985,14 @@ unsigned short SectorToFpga(unsigned char sector,unsigned char track)
 		SPI(0x55);
 	
 	/*checksum over header*/
-	SPI((csum[0]>>1)|0xaa);
-	SPI((csum[1]>>1)|0xaa);
-	SPI((csum[2]>>1)|0xaa);
-	SPI((csum[3]>>1)|0xaa);
-	SPI(csum[0]|0xaa);
-	SPI(csum[1]|0xaa);
-	SPI(csum[2]|0xaa);
-	SPI(csum[3]|0xaa);
+	SPI((unsigned char)((csum[0]>>1)|0xaa));
+	SPI((unsigned char)((csum[1]>>1)|0xaa));
+	SPI((unsigned char)((csum[2]>>1)|0xaa));
+	SPI((unsigned char)((csum[3]>>1)|0xaa));
+	SPI((unsigned char)(csum[0]|0xaa));
+	SPI((unsigned char)(csum[1]|0xaa));
+	SPI((unsigned char)(csum[2]|0xaa));
+	SPI((unsigned char)(csum[3]|0xaa));
 	
 	/*calculate data checksum*/
 	csum[0]=0;
@@ -1958,16 +2004,16 @@ unsigned short SectorToFpga(unsigned char sector,unsigned char track)
 	do
 	{
 		c=*(p++);
-		csum[0]^=c>>1;
+		csum[0]^=(unsigned char)(c>>1);
 		csum[0]^=c;
 		c=*(p++);
-		csum[1]^=c>>1;
+		csum[1]^=(unsigned char)(c>>1);
 		csum[1]^=c;
 		c=*(p++);
-		csum[2]^=c>>1;
+		csum[2]^=(unsigned char)(c>>1);
 		csum[2]^=c;
 		c=*(p++);
-		csum[3]^=c>>1;
+		csum[3]^=(unsigned char)(c>>1);
 		csum[3]^=c;
 	}	
 	while(--i);
@@ -1978,14 +2024,14 @@ unsigned short SectorToFpga(unsigned char sector,unsigned char track)
 	
 		
 	/*checksum over data*/
-	SPI((csum[0]>>1)|0xaa);
-	SPI((csum[1]>>1)|0xaa);
-	SPI((csum[2]>>1)|0xaa);
-	SPI((csum[3]>>1)|0xaa);
-	SPI(csum[0]|0xaa);
-	SPI(csum[1]|0xaa);
-	SPI(csum[2]|0xaa);
-	SPI(csum[3]|0xaa);
+	SPI((unsigned char)((csum[0]>>1)|0xaa));
+	SPI((unsigned char)((csum[1]>>1)|0xaa));
+	SPI((unsigned char)((csum[2]>>1)|0xaa));
+	SPI((unsigned char)((csum[3]>>1)|0xaa));
+	SPI((unsigned char)(csum[0]|0xaa));
+	SPI((unsigned char)(csum[1]|0xaa));
+	SPI((unsigned char)(csum[2]|0xaa));
+	SPI((unsigned char)(csum[3]|0xaa));
 	
 	/*odd bits of data field*/	
 	i=128;
@@ -2024,23 +2070,23 @@ unsigned short SectorToFpga(unsigned char sector,unsigned char track)
 	do
 	{
 		c=*(p++);
-		SSPBUF=c|0xaa;
+		SSPBUF=(unsigned char)(c|0xaa);
 		while(!BF);		
 		c=*(p++);
-		SSPBUF=c|0xaa;
+		SSPBUF=(unsigned char)(c|0xaa);
 		while(!BF);		
 		c=*(p++);
-		SSPBUF=c|0xaa;
+		SSPBUF=(unsigned char)(c|0xaa);
 		while(!BF);
 		c3 = SSPBUF;
 		c=*(p++);
-		SSPBUF=c|0xaa;
+		SSPBUF=(unsigned char)(c|0xaa);
 		while(!BF);
 		c4 = SSPBUF;
 	}
 	while(--i);
 	
-	return((c3<<8)|c4);
+	return (unsigned char)((c3<<8u)|c4);
 }
 	
 

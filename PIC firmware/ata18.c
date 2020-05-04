@@ -103,10 +103,10 @@ unsigned char response_4;		/*byte that holds the fourth response byte*/
 unsigned char response_5;		/*byte that holds the fifth response byte*/
 
 /*internal functions*/
-Command_R0(char cmd,unsigned short AdrH,unsigned short AdrL);
-Command_R1(char cmd,unsigned short AdrH,unsigned short AdrL);
-Command_R2(char cmd,unsigned short AdrH,unsigned short AdrL);
-Command_R3(char cmd,unsigned short AdrH,unsigned short AdrL);
+void Command_R0(char cmd,unsigned short AdrH,unsigned short AdrL);
+void Command_R1(char cmd,unsigned short AdrH,unsigned short AdrL);
+void Command_R2(char cmd,unsigned short AdrH,unsigned short AdrL);
+void Command_R3(char cmd,unsigned short AdrH,unsigned short AdrL);
 void MmcAddCrc7(unsigned char c);
 
 	
@@ -332,7 +332,7 @@ unsigned char AtaWriteSector(unsigned long lba, unsigned char *WriteData)
 
 
 /*Send a command to the SDcard*/
-Command_R0(char cmd,unsigned short AdrH,unsigned short AdrL)
+void Command_R0(char cmd,unsigned short AdrH,unsigned short AdrL)
 {
 	crc_7=0;
 	SPI(0xFF);				/*flush SPI-bus*/
@@ -357,7 +357,7 @@ Command_R0(char cmd,unsigned short AdrH,unsigned short AdrL)
 
 
 /*Send a command to the SDcard, a one byte response is expected*/
-Command_R1(char cmd,unsigned short AdrH,unsigned short AdrL)
+void Command_R1(char cmd,unsigned short AdrH,unsigned short AdrL)
 {
 	unsigned char i = 100;
 	Command_R0(cmd, AdrH, AdrL);	/*send command*/
@@ -368,7 +368,7 @@ Command_R1(char cmd,unsigned short AdrH,unsigned short AdrL)
 
 
 /*Send a command to the SDcard, a two byte response is expected*/
-Command_R2(char cmd,unsigned short AdrH,unsigned short AdrL)
+void Command_R2(char cmd,unsigned short AdrH,unsigned short AdrL)
 {
 	unsigned char i = 100;
 	Command_R0(cmd, AdrH, AdrL);	/*send command*/
@@ -380,7 +380,7 @@ Command_R2(char cmd,unsigned short AdrH,unsigned short AdrL)
 
 
 /*Send a command to the SDcard, a five byte response is expected*/
-Command_R3(char cmd,unsigned short AdrH,unsigned short AdrL)
+void Command_R3(char cmd,unsigned short AdrH,unsigned short AdrL)
 {
 	unsigned char i = 100;
 	Command_R0(cmd, AdrH, AdrL);	/*send command*/

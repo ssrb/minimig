@@ -27,7 +27,7 @@ This is the Minimig OSD (on-screen-display) handler.
 #include "hardware.h"
 
 /*character font*/
-const unsigned char charfont[256][5]=
+const unsigned char charfont[256][5]= {
 0x00,0xfe,0x81,0xfe,0x00,         // 0 	[0x0]
 0x00,0xfe,0xc1,0xfe,0x00,         // 1 	[0x1]
 0x00,0xfe,0xe1,0xfe,0x00,         // 2 	[0x2]
@@ -284,25 +284,25 @@ const unsigned char charfont[256][5]=
 0xf0,0x70,0xf0,0x70,0xf0,         // 253 	[0xfd]
 0xe0,0x60,0xe0,0x60,0xe0,         // 254 	[0xfe]
 0xc0,0x40,0xc0,0x40,0xc0          // 255 	[0xff]
-;
+};
 
 /*some constants*/
-#define OSDNLINE		8			/*number of lines of OSD*/
-#define	OSDLINELEN		128			/*single line length in bytes*/
-#define	OSDCMDREAD		0x00		//OSD read controller/key status
-#define	OSDCMDWRITE		0x20		//OSD write video data command
-#define	OSDCMDENABLE	0x60		//OSD enable command
-#define	OSDCMDDISABLE	0x40		//OSD disable command
-#define	OSDCMDRESET		0x80		//OSD reset command
-#define	OSDCMDFILTER	0xE0		//OSD settings: filter
-#define	OSDCMDMEMCFG	0xF0		//OSD settings: memory config
+#define OSDNLINE		8u			/*number of lines of OSD*/
+#define	OSDLINELEN		128u			/*single line length in bytes*/
+#define	OSDCMDREAD		0x00u		//OSD read controller/key status
+#define	OSDCMDWRITE		0x20u		//OSD write video data command
+#define	OSDCMDENABLE	0x60u		//OSD enable command
+#define	OSDCMDDISABLE	0x40u		//OSD disable command
+#define	OSDCMDRESET		0x80u		//OSD reset command
+#define	OSDCMDFILTER	0xE0u		//OSD settings: filter
+#define	OSDCMDMEMCFG	0xF0u		//OSD settings: memory config
 
 #define REPEATTIME		50			/*repeat delay in 10ms units*/
 #define REPEATRATE		5			/*repeat rate in 10ms units*/
 
 
 /*write a null-terminated string <s> to the OSD buffer starting at line <n>*/
-void OsdWrite(unsigned char n,const unsigned char *s,char invert)
+void OsdWrite(unsigned char n,const char *s, int invert)
 {
 	unsigned char b;
 	const unsigned char *p;
@@ -388,21 +388,21 @@ void OsdDisable(void)
 void OsdReset(unsigned char boot)
 {
 	EnableOsd();
-	SPI(OSDCMDRESET | (boot&0x01));
+	SPI(OSDCMDRESET | (boot&0x01u));
 	DisableOsd();
 }
 
 void OsdFilter(unsigned char lr_filter, unsigned char hr_filter)
 {
 	EnableOsd();
-	SPI(OSDCMDFILTER | ((hr_filter&0x03)<<2) | (lr_filter&0x03));
+	SPI(OSDCMDFILTER | ((hr_filter&0x03u)<<2) | (lr_filter&0x03u));
 	DisableOsd();
 }
 
 void OsdMemoryConfig(unsigned char memcfg)
 {
 	EnableOsd();
-	SPI(OSDCMDMEMCFG | (memcfg&0x03));
+	SPI(OSDCMDMEMCFG | (memcfg&0x03u));
 	DisableOsd();
 }
 
@@ -423,7 +423,7 @@ unsigned char OsdGetCtrl(void)
 		c1|=OSDCTRLMENU;	
 
 	/*generate normal "key-pressed" event*/
-	c=c1&(~c2);
+	c= (unsigned char)(c1 & ~c2);
 	c2=c1;
 	
 	/*generate repeat "key-pressed" events

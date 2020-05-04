@@ -3,18 +3,18 @@
 
 /*IO defines*/
 #define	PROG_B		TRISA2			/*FPGA config*/
-#define	DONE		RB3				/*FPGA config*/
-#define	INIT_B		RA3				/*FPGA config*/
+#define	DONE		PORTBbits.RB3				/*FPGA config*/
+#define	INIT_B		PORTAbits.RA3				/*FPGA config*/
 #define	CCLK		LATA5			/*FPGA config*/
 #define	DIN			LATB7			/*FPGA config*/
-#define	_SW0		RB0				/*switch input*/
-#define	_SW1		RB1				/*switch input*/
-#define DISKLED		RB4				/*disk led output*/
+#define	_SW0		PORTBbits.RB0				/*switch input*/
+#define	_SW1		PORTBbits.RB1				/*switch input*/
+#define DISKLED		PORTBbits.RB4				/*disk led output*/
 #define	_M_CD		TRISA0			/*mmc card clock disable*/
-#define	_M_CS		RC0				/*mmc card spi select*/
-#define	_F_CS0		RA1				/*FGPA spi0 select*/
-#define	_F_CS1		RB5				/*FGPA spi1 select*/
-#define	_F_CS2		RB6				/*FGPA spi2 select*/
+#define	_M_CS		PORTCbits.RC0				/*mmc card spi select*/
+#define	_F_CS0		PORTAbits.RA1				/*FGPA spi0 select*/
+#define	_F_CS1		PORTBbits.RB5				/*FGPA spi1 select*/
+#define	_F_CS2		PORTBbits.RB6				/*FGPA spi2 select*/
 
 /*functions and macro's*/
 void HardwareInit(void);
