@@ -2,3 +2,7 @@
 PIC firmware/minimig.X/
 
 PIC firmware/firmware.hex
+
+fpga core/minimig/
+
+fpga core/iseconfig/
