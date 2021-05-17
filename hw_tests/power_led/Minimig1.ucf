@@ -1,0 +1,5 @@
+#PACE: Start of PACE I/O Pin Assignments
+NET "i_clock"  LOC = "P80" | IOSTANDARD = LVCMOS33 ; 
+NET "i_switch_2"  LOC = "P168" | IOSTANDARD = LVCMOS33  | PULLUP ; 
+NET "i_switch_1"  LOC = "P175" | IOSTANDARD = LVCMOS33  | PULLUP ; 
+NET "o_led_drive"  LOC = "P94" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW  | PULLUP ; 

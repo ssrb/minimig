@@ -1,0 +1,16 @@
+#PACE: Start of PACE I/O Pin Assignments
+NET "i_clock"  LOC = "P80" | IOSTANDARD = LVCMOS33 ; 
+NET "vga_r[0]"  LOC = "P4" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_r[1]"  LOC = "P5" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_r[2]"  LOC = "P7" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_r[3]"  LOC = "P9" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_g[0]"  LOC = "P204" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_g[1]"  LOC = "P205" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_g[2]"  LOC = "P2" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_g[3]"  LOC = "P3" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_b[0]"  LOC = "P198" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_b[1]"  LOC = "P199" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_b[2]"  LOC = "P200" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_b[3]"  LOC = "P203" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ;
+NET "vga_hs"  LOC = "P196" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "vga_vs"  LOC = "P197" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 

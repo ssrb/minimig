@@ -1,0 +1,8 @@
+INTSTYLE=ise
+INFILE=/mnt/data/Hacking/minimig/hw_tests/power_led/power_led/Minimig1.ncd
+OUTFILE=/mnt/data/Hacking/minimig/hw_tests/power_led/power_led/Minimig1.bit
+FAMILY=Spartan3
+PART=xc3s400-5pq208
+WORKINGDIR=/mnt/data/Hacking/minimig/hw_tests/power_led/power_led
+LICENSE=WebPack
+USER_INFO=__0_0_0

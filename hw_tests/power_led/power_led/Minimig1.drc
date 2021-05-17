@@ -1,0 +1,11 @@
+Release 14.7 Drc P.20131013 (lin64)
+Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
+
+Sun May 16 11:51:12 2021
+
+drc -z Minimig1.ncd Minimig1.pcf
+
+WARNING:PhysDesignRules:781 - PULLUP on an active net. PULLUP of comp
+   o_led_drive is set but the tri state is not configured. 
+DRC detected 0 errors and 1 warnings.  Please see the previously displayed
+individual error or warning messages for more details.
