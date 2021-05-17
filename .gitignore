@@ -6,3 +6,7 @@ PIC firmware/firmware.hex
 fpga core/minimig/
 
 fpga core/iseconfig/
+
+hw_tests/power_led/power_led/
+
+hw_tests/vga/vga/
