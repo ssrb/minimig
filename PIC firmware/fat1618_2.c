@@ -143,8 +143,10 @@ unsigned char FileSearch2(struct file2TYPE *file, unsigned char mode) {
                 file->attributes = secbuf[i + 11];
 
                 /*get length of file*/
-                file->len = *((unsigned long*) &secbuf[i + 28]); //it only works when using little endian long representation
-
+                file->len = (unsigned long)secbuf[i + 28] | ((unsigned long)secbuf[i + 29]) << 8 | ((unsigned long)secbuf[i + 30]) << 16 | ((unsigned long)secbuf[i + 31]) << 24;
+                printf("len %02x %02x %02x %02x = %lu\r", secbuf[i + 28], secbuf[i + 29], secbuf[i + 30], secbuf[i + 31], file->len);
+                
+                
                 /*get first cluster of file*/
                 file->cluster = (unsigned long) secbuf[i + 26]+((unsigned long) secbuf[i + 27]*256);
 

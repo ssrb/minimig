@@ -57,8 +57,8 @@ void HardwareInit(void)
 	TRISC=0b10010000;
 	
 	/*initialize serial port*/
-	/*SPBRG=129;*/	/*9600 BAUD @ 20MHz*/
-	SPBRG=10;	/*115200 BAUD @ 20MHz*/
+	SPBRG=129;	/*9600 BAUD @ 20MHz*/
+	//SPBRG=10;	/*115200 BAUD @ 20MHz*/
 	TXSTA=0x24;
 	RCSTA=0x90;
 	
@@ -115,13 +115,6 @@ unsigned char CheckTimer(unsigned short t)
 		return(1);
 	else
 		return(0);
-}
-
-/*put out a chacter to the serial port*/
-void putch(unsigned char ch) 
-{
-	while(TRMT==0);
-	TXREG=ch;  	
 }
 
 /*SPI-bus*/

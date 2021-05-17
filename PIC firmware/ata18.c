@@ -152,6 +152,7 @@ unsigned char SDCARD_Init(void)
 				if (timeout == 1000)				/*timeout mechanism*/
 				{
 					DisableCard();
+                    printf("MMC-card timed out\n\r");
 					return(FALSE);
 				}
 				timeout++;
@@ -172,6 +173,7 @@ unsigned char SDCARD_Init(void)
 				if (timeout == 1000)						/*timeout mechanism*/
 				{
 					DisableCard();
+                    printf("SD-card timed out\n\r");
 					return(FALSE);
 				}
 				timeout++;
