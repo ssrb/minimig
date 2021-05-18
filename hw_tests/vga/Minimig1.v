@@ -1,6 +1,8 @@
 module Minimig1
 (
-	input i_clock,	
+	input i_clock,
+	input ps2_clk,
+	input ps2_data,
 	output [3:0] vga_r,
 	output [3:0] vga_g,
 	output [3:0] vga_b,
@@ -92,16 +94,60 @@ reg r_arr = 0;
 assign ps2_clk_pos = (ps2_clk_buf == 2'b01);
 
 always @ (posedge vga_clk) begin
+	ps2_clk_buf[1:0] <= {ps2_clk_buf[0], ps2_clk};
+	if (ps2_clk_pos == 1) begin
+		ps2_cntr <= ps2_cntr + 1;
+		if (ps2_cntr == 10) begin
+			ps2_cntr <= 0;
+			ps2_data_reg[7] <= ps2_dat_r[0];
+			ps2_data_reg[6] <= ps2_dat_r[1];
+			ps2_data_reg[5] <= ps2_dat_r[2];
+			ps2_data_reg[4] <= ps2_dat_r[3];
+			ps2_data_reg[3] <= ps2_dat_r[4];
+			ps2_data_reg[2] <= ps2_dat_r[5];
+			ps2_data_reg[1] <= ps2_dat_r[6];
+			ps2_data_reg[0] <= ps2_dat_r[7];
+			ps2_data_reg_prev <= ps2_data_reg;
+			ps2_data_reg_prev1 <= ps2_data_reg_prev;
+		end
+		ps2_dat_r <= {ps2_dat_r[9:0], ps2_data};
+	end
 	
+	if (ps2_data_reg_prev1 == 8'he0 && ps2_data_reg_prev == 8'hf0) begin
+		if (ps2_data_reg == 8'h75) begin
+			u_arr <= 0;
+		end
+		
+		else if (ps2_data_reg == 8'h6b) begin
+			l_arr <= 0;
+		end
+		
+		else if (ps2_data_reg == 8'h72) begin
+			d_arr <= 0;
+		end
+		
+		else if (ps2_data_reg == 8'h74) begin
+			r_arr <= 0;
+		end
+	end
+	if (ps2_data_reg_prev == 8'he0) begin
+		if (ps2_data_reg == 8'h75) begin
+			u_arr <= 1;
+		end
+		
+		else if (ps2_data_reg == 8'h6b) begin
+			l_arr <= 1;
+		end
+		
+		else if (ps2_data_reg == 8'h72) begin
+			d_arr <= 1;
+		end
+		
+		else if (ps2_data_reg == 8'h74) begin
+			r_arr <= 1;
+		end
+	end	
 end
-
-
-
-
-
-
-
-
 
 endmodule
 
