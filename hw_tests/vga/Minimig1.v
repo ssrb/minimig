@@ -149,6 +149,117 @@ always @ (posedge vga_clk) begin
 	end	
 end
 
+always @ (posedge vga_clk) begin
+	if (timer_t > 250) begin
+		reset <= 0;
+	end
+	else begin
+		reset <= 1;
+		timer_t <= timer_t + 1;
+		disp_en <= 0;
+		sq_pos_x <= init_x;
+		sq_pos_y <= init_y;
+	end
+	
+	if (reset == 1) begin
+		c_hor <= 0;
+		c_ver <= 0;
+		vga_hs_r <= 1;
+		vga_vs_r <= 0;
+		c_row <= 0;
+		c_col <= 0;		
+	end
+	else begin
+		if (c_hor < h_frame - 1) begin
+			c_hor <= c_hor + 1;
+		end
+		else begin
+			c_hor <= 0;
+			if (c_ver < v_frame - 1) begin
+				c_ver <= c_ver + 1;
+			end
+			else begin
+				c_ver <= 0;
+			end
+		end
+	end
+	
+	if (c_hor < h_pixels + h_fp + 1 || c_hor > h_pixels + h_fp + h_pulse) begin
+		vga_hs_r <= ~h_pol;
+	end
+	else begin
+		vga_hs_r <= h_pol;
+	end
+	
+	if (c_ver < v_pixels + v_fp + 1 || c_ver > v_pixels + v_fp + v_pulse) begin
+		vga_vs_r <= ~v_pol;
+	end
+	else begin
+		vga_vs_r <= v_pol;
+	end
+	
+	if (c_hor < h_pixels) begin
+		c_col <= c_hor;
+	end
+	
+	if (c_ver < v_pixels) begin
+		c_row <= c_ver;
+	end
+	
+	if (c_hor < h_pixels && c_ver < v_pixels) begin
+		disp_en <= 1;
+	end
+	else begin
+		disp_en <= 0;
+	end	
+	
+	if (disp_en == 1 || reset == 0) begin
+		if (c_row == 0|| c_col == 0 || c_row == v_pixels-1 || c_col == h_pixels-1) begin
+			vga_r_r <= 7;
+			vga_g_r <= 0;
+			vga_b_r <= 0;
+		end
+		else if (c_col > l_sq_pos_x && c_col < r_sq_pos_x && c_row > u_sq_pos_y && c_row < d_sq_pos_y) begin
+			vga_r_r <= 0;
+			vga_g_r <= 0;
+			vga_b_r <= 7;
+		end
+		else begin
+			vga_r_r <= 0;
+			vga_g_r <= 0;
+			vga_b_r <= 0;
+		end
+		end
+	else begin
+		vga_r_r <= 0;
+		vga_g_r <= 0;
+		vga_b_r <= 0;
+	end
+	
+	if (c_row == 1 && c_col == 1) begin
+		if (u_arr) begin
+			sq_pos_y <= sq_pos_y - 1;
+		end
+		
+		if (d_arr) begin
+			sq_pos_y <= sq_pos_y + 1;
+		end
+		
+		if (l_arr) begin
+			sq_pos_x <= sq_pos_x - 1;
+		end
+		
+		if (r_arr) begin
+			sq_pos_x <= sq_pos_x - 1;
+		end
+	end
+end
+	
+	
+	
+	
+	
+
 endmodule
 
 	
