@@ -214,7 +214,7 @@ always @ (posedge vga_clk) begin
 	end	
 	
 	if (disp_en == 1 || reset == 0) begin
-		if (c_row == 0|| c_col == 0 || c_row == v_pixels-1 || c_col == h_pixels-1) begin
+		if (c_row == 10|| c_col == 10 || c_row == v_pixels-11 || c_col == h_pixels-11) begin
 			vga_r_r <= 7;
 			vga_g_r <= 0;
 			vga_b_r <= 0;
@@ -229,7 +229,7 @@ always @ (posedge vga_clk) begin
 			vga_g_r <= 0;
 			vga_b_r <= 0;
 		end
-		end
+	end
 	else begin
 		vga_r_r <= 0;
 		vga_g_r <= 0;
