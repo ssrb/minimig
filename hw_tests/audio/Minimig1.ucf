@@ -1,0 +1,9 @@
+#PACE: Start of PACE I/O Pin Assignments
+NET "mclk"  LOC = "P80" | IOSTANDARD = LVCMOS33 ;  
+NET "pwrled"  LOC = "P94" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW  | PULLUP ; 
+NET "left"  LOC = "P191" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "right"  LOC = "P190" | IOSTANDARD = LVCMOS33  | DRIVE = 12  | SLEW = SLOW ; 
+NET "rts"  LOC = "P187" | IOSTANDARD = LVCMOS33  | SLEW = SLOW  | DRIVE = 4 ; 
+NET "rxd"  LOC = "P185" | IOSTANDARD = LVCMOS33 ; 
+NET "txd"  LOC = "P184" | IOSTANDARD = LVCMOS33  | DRIVE = 4  | SLEW = SLOW ; 
+

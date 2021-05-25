@@ -11,3 +11,5 @@ hw_tests/vga/vga/
 PIC firmware/minimig.X/build/
 
 PIC firmware/minimig.X/dist/
+
+hw_tests/audio/audio/
