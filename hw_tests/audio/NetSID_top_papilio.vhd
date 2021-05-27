@@ -109,20 +109,35 @@ begin
 		port map(clk => clk, reset => reset, rx => srx, s_tick => tick,
 					rx_done_tick => rx_data_present, dout => rx_data);
 
-	rx_fifo: entity work.altera_fifo
-	port map(
-		clock => clk,
-		aclr => reset,
-		data => rx_data,
-		rdreq	=> fifo_read_ack,
-		wrreq => rx_data_present,
-		almost_empty => fifo_almost_empty,
-		almost_full	=> fifo_almost_full,
-		empty	=> fifo_empty,
-		full 	=> fifo_full,
-		q		=> fifo_data_out,
-		usedw	=> open
-	);					
+
+rx_fifo: entity work.fifo_generator_v9_3
+  PORT MAP (
+    clk => clk,
+    rst => reset,
+    din => rx_data,
+    wr_en => rx_data_present,
+    rd_en => fifo_read_ack,
+    dout => fifo_data_out,
+    full => fifo_full,
+    almost_full => fifo_almost_full,
+    empty => fifo_empty,
+    almost_empty => fifo_almost_empty
+ );
+
+	--rx_fifo: entity work.altera_fifo
+	--port map(
+	--	clock => clk,
+	--	aclr => reset,
+	--	data => rx_data,
+	--	rdreq	=> fifo_read_ack,
+	--	wrreq => rx_data_present,
+	--	almost_empty => fifo_almost_empty,
+	--	almost_full	=> fifo_almost_full,
+	--	empty	=> fifo_empty,
+	--	full 	=> fifo_full,
+	--	q		=> fifo_data_out,
+	--	usedw	=> open
+	--);					
 
   -----------------------------------------------------------------------------
   -- SID 6581
